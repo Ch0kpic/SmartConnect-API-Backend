@@ -1,0 +1,611 @@
+
+## GUÍA DE PRUEBAS - SmartConnect API
+## Endpoints y Ejemplos de Uso
+
+BASE_URL: http://localhost:8000/api
+
+---
+
+### 1. ENDPOINTS DE AUTENTICACIÓN (SIN TOKEN)
+
+#### Login - Obtener Token JWT
+POST /login/
+
+Headers:
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "username": "admin",
+  "password": "admin123456"
+}
+
+Response (200):
+{
+  "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "username": "admin",
+    "email": "admin@smartconnect.com",
+    "first_name": "Admin",
+    "last_name": "Usuario"
+  }
+}
+
+---
+
+#### Registrar Nuevo Usuario
+POST /registro/
+
+Headers:
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "username": "nuevo_usuario",
+  "email": "nuevo@smartconnect.com",
+  "first_name": "Nuevo",
+  "last_name": "Usuario",
+  "password": "Password123456",
+  "password_confirm": "Password123456",
+  "rol_id": 2
+}
+
+Response (201):
+{
+  "message": "Usuario registrado exitosamente",
+  "user": {
+    "id": 3,
+    "username": "nuevo_usuario",
+    "email": "nuevo@smartconnect.com"
+  }
+}
+
+---
+
+#### Obtener Información del Proyecto
+GET /info/
+
+Headers: (NO REQUIERE TOKEN)
+  Content-Type: application/json
+
+Response (200):
+{
+  "autor": ["Dylan Torres"],
+  "asignatura": "Programación Back End",
+  "proyecto": "SmartConnect - Sistema de Control de Acceso Inteligente",
+  "descripcion": "API RESTful para gestionar sensores RFID, usuarios, departamentos y eventos de acceso en un sistema IoT de control inteligente.",
+  "version": "1.0"
+}
+
+---
+
+### 2. ENDPOINTS CRUD - SENSORES (Requieren Token JWT)
+
+#### Listar Sensores
+GET /sensores/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (200):
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "uid": "AA:BB:CC:DD:EE:01",
+      "nombre": "Tarjeta Acceso 001",
+      "estado": "activo",
+      "departamento": 1,
+      "departamento_nombre": "Entrada Principal",
+      "usuario": null,
+      "usuario_nombre": "",
+      "fecha_creacion": "2025-12-08T16:01:46.000Z",
+      "fecha_actualizacion": "2025-12-08T16:01:46.000Z"
+    }
+  ]
+}
+
+---
+
+#### Crear Sensor (ADMIN SOLO)
+POST /sensores/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "uid": "AA:BB:CC:DD:EE:04",
+  "nombre": "Nuevo Sensor RFID",
+  "estado": "activo",
+  "departamento": 1,
+  "usuario": null
+}
+
+Response (201):
+{
+  "id": 4,
+  "uid": "AA:BB:CC:DD:EE:04",
+  "nombre": "Nuevo Sensor RFID",
+  "estado": "activo",
+  "departamento": 1,
+  "departamento_nombre": "Entrada Principal",
+  "usuario": null,
+  "usuario_nombre": "",
+  "fecha_creacion": "2025-12-08T16:02:30.000Z",
+  "fecha_actualizacion": "2025-12-08T16:02:30.000Z"
+}
+
+---
+
+#### Obtener Detalles de un Sensor
+GET /sensores/1/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (200):
+{
+  "id": 1,
+  "uid": "AA:BB:CC:DD:EE:01",
+  "nombre": "Tarjeta Acceso 001",
+  "estado": "activo",
+  "departamento": 1,
+  "departamento_nombre": "Entrada Principal",
+  "usuario": null,
+  "usuario_nombre": "",
+  "fecha_creacion": "2025-12-08T16:01:46.000Z",
+  "fecha_actualizacion": "2025-12-08T16:01:46.000Z"
+}
+
+---
+
+#### Actualizar Sensor (ADMIN SOLO)
+PUT /sensores/1/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "uid": "AA:BB:CC:DD:EE:01",
+  "nombre": "Tarjeta Acceso Actualizada",
+  "estado": "inactivo",
+  "departamento": 2,
+  "usuario": null
+}
+
+Response (200):
+{
+  "id": 1,
+  "uid": "AA:BB:CC:DD:EE:01",
+  "nombre": "Tarjeta Acceso Actualizada",
+  "estado": "inactivo",
+  "departamento": 2,
+  "departamento_nombre": "Sala de Servidores",
+  "usuario": null,
+  "usuario_nombre": "",
+  "fecha_creacion": "2025-12-08T16:01:46.000Z",
+  "fecha_actualizacion": "2025-12-08T16:02:45.000Z"
+}
+
+---
+
+#### Eliminar Sensor (ADMIN SOLO)
+DELETE /sensores/1/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (204): No Content
+
+---
+
+#### Cambiar Estado de Sensor (ADMIN SOLO)
+POST /sensores/1/cambiar_estado/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "estado": "bloqueado"
+}
+
+Response (200):
+{
+  "message": "Estado del sensor actualizado a: bloqueado",
+  "sensor": {
+    "id": 1,
+    "uid": "AA:BB:CC:DD:EE:01",
+    "nombre": "Tarjeta Acceso 001",
+    "estado": "bloqueado",
+    ...
+  }
+}
+
+---
+
+### 3. ENDPOINTS CRUD - DEPARTAMENTOS
+
+#### Listar Departamentos
+GET /departamentos/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (200):
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "nombre": "Entrada Principal",
+      "descripcion": "Puerta principal de acceso",
+      "ubicacion": "Planta baja",
+      "activo": true,
+      "sensores_count": 1
+    }
+  ]
+}
+
+---
+
+#### Crear Departamento
+POST /departamentos/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "nombre": "Nuevo Departamento",
+  "descripcion": "Descripción del nuevo departamento",
+  "ubicacion": "Piso 5",
+  "activo": true
+}
+
+Response (201):
+{
+  "id": 4,
+  "nombre": "Nuevo Departamento",
+  "descripcion": "Descripción del nuevo departamento",
+  "ubicacion": "Piso 5",
+  "activo": true,
+  "sensores_count": 0
+}
+
+---
+
+### 4. ENDPOINTS CRUD - BARRERAS
+
+#### Listar Barreras
+GET /barreras/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (200):
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "nombre": "Barrera Entrada Principal",
+      "estado": "cerrada",
+      "departamento": 1,
+      "departamento_nombre": "Entrada Principal",
+      "fecha_ultimo_cambio": "2025-12-08T16:01:46.000Z"
+    }
+  ]
+}
+
+---
+
+#### Abrir Barrera Manualmente (ADMIN SOLO)
+POST /barreras/1/abrir/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (200):
+{
+  "message": "Barrera Barrera Entrada Principal abierta",
+  "barrera": {
+    "id": 1,
+    "nombre": "Barrera Entrada Principal",
+    "estado": "abierta",
+    "departamento": 1,
+    "departamento_nombre": "Entrada Principal",
+    "fecha_ultimo_cambio": "2025-12-08T16:03:15.000Z"
+  }
+}
+
+---
+
+#### Cerrar Barrera Manualmente (ADMIN SOLO)
+POST /barreras/1/cerrar/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (200):
+{
+  "message": "Barrera Barrera Entrada Principal cerrada",
+  "barrera": {
+    "id": 1,
+    "nombre": "Barrera Entrada Principal",
+    "estado": "cerrada",
+    "departamento": 1,
+    "departamento_nombre": "Entrada Principal",
+    "fecha_ultimo_cambio": "2025-12-08T16:03:20.000Z"
+  }
+}
+
+---
+
+### 5. ENDPOINTS CRUD - EVENTOS
+
+#### Listar Eventos
+GET /eventos/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (200):
+{
+  "count": 5,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "sensor": 1,
+      "sensor_nombre": "Tarjeta Acceso 001",
+      "sensor_uid": "AA:BB:CC:DD:EE:01",
+      "tipo": "acceso_permitido",
+      "barrera": 1,
+      "barrera_nombre": "Barrera Entrada Principal",
+      "usuario_accion": null,
+      "usuario_accion_nombre": "",
+      "mensaje": "Acceso permitido. Sensor: Tarjeta Acceso 001",
+      "fecha_evento": "2025-12-08T16:02:15.000Z"
+    }
+  ]
+}
+
+---
+
+#### Filtrar Eventos por Tipo
+GET /eventos/?tipo=acceso_permitido
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (200):
+{
+  "count": 2,
+  "results": [...]
+}
+
+---
+
+#### Obtener Eventos de un Sensor Específico
+GET /eventos/por_sensor/?sensor_id=1
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (200):
+[
+  {
+    "id": 1,
+    "sensor": 1,
+    "sensor_nombre": "Tarjeta Acceso 001",
+    ...
+  }
+]
+
+---
+
+### 6. ENDPOINTS DE SIMULACIÓN IoT (SIN HARDWARE)
+
+#### Simular Lectura de Sensor RFID
+POST /simular/lectura-sensor/
+
+Headers:
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "uid": "AA:BB:CC:DD:EE:01",
+  "departamento_id": 1
+}
+
+Response (200):
+{
+  "acceso": "permitido",
+  "sensor": "Tarjeta Acceso 001",
+  "uid": "AA:BB:CC:DD:EE:01",
+  "estado_sensor": "activo",
+  "departamento": "Entrada Principal",
+  "evento_id": 6,
+  "timestamp": "2025-12-08T16:04:30.000Z"
+}
+
+Response (403) - Sensor Bloqueado:
+{
+  "acceso": "denegado",
+  "razon": "Sensor bloqueado por administrador",
+  "sensor": "Tarjeta Acceso 001",
+  "evento_id": 7
+}
+
+---
+
+#### Simular Intento de Acceso Completo
+POST /simular/intento-acceso/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "uid": "AA:BB:CC:DD:EE:01",
+  "barrera_id": 1
+}
+
+Response (200):
+{
+  "acceso": "permitido",
+  "sensor": "Tarjeta Acceso 001",
+  "barrera": "Barrera Entrada Principal",
+  "barrera_accion": "ABIERTA",
+  "evento_id": 8,
+  "timestamp": "2025-12-08T16:04:45.000Z"
+}
+
+---
+
+#### Simular Cierre Automático de Barrera
+POST /simular/cierre-barrera/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "barrera_id": 1
+}
+
+Response (200):
+{
+  "mensaje": "Barrera cerrada",
+  "barrera": "Barrera Entrada Principal",
+  "estado": "cerrada",
+  "evento_id": 9
+}
+
+---
+
+#### Cambiar Estado del Sensor (Reportar como Perdido, etc)
+POST /simular/cambio-estado/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "uid": "AA:BB:CC:DD:EE:03",
+  "nuevo_estado": "perdido"
+}
+
+Response (200):
+{
+  "mensaje": "Estado del sensor actualizado",
+  "sensor": "Pulsera RFID 003",
+  "estado_anterior": "bloqueado",
+  "estado_nuevo": "perdido",
+  "uid": "AA:BB:CC:DD:EE:03"
+}
+
+---
+
+#### Ver Estado General del Sistema
+GET /simular/estado-sistema/
+
+Headers:
+  Authorization: Bearer {TOKEN_AQUI}
+  Content-Type: application/json
+
+Response (200):
+{
+  "sensores": {
+    "total": 3,
+    "activos": 2,
+    "inactivos": 0,
+    "bloqueados": 1,
+    "perdidos": 1
+  },
+  "barreras": {
+    "total": 3,
+    "abiertas": 1,
+    "cerradas": 2
+  },
+  "eventos_24h": {
+    "total": 12,
+    "accesos_permitidos": 7,
+    "accesos_denegados": 5
+  },
+  "timestamp": "2025-12-08T16:05:00.000Z"
+}
+
+---
+
+### 7. CÓDIGOS DE ERROR
+
+400 Bad Request - Validación fallida
+  Ejemplo: UID inválido, estado no válido, campo requerido faltante
+
+401 Unauthorized - Sin autenticación
+  Falta token JWT o token expirado
+  
+403 Forbidden - Sin permisos
+  Usuario no es admin y trata de crear/actualizar sensor
+  Sensor está bloqueado/inactivo
+  
+404 Not Found - Recurso no existe
+  Sensor/Barrera/Departamento no encontrado
+  
+500 Internal Server Error - Error del servidor
+
+---
+
+### 8. FLUJO COMPLETO DE PRUEBA
+
+1. Login (obtener token):
+   POST /login/ → Copiar el token del campo "access"
+
+2. Crear un sensor:
+   POST /sensores/ con token
+
+3. Simular lectura RFID:
+   POST /simular/lectura-sensor/ con UID del sensor
+
+4. Simular acceso con barrera:
+   POST /simular/intento-acceso/ con UID y barrera_id
+
+5. Cerrar barrera:
+   POST /simular/cierre-barrera/ con barrera_id
+
+6. Ver eventos generados:
+   GET /eventos/ con token
+
+7. Ver estado del sistema:
+   GET /simular/estado-sistema/ con token

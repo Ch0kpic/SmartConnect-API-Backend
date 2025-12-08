@@ -1,0 +1,624 @@
+{
+  "info": {
+    "name": "SmartConnect API - Control de Acceso Inteligente",
+    "description": "Colección completa de endpoints para pruebas de la API SmartConnect",
+    "version": "1.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. AUTENTICACIÓN",
+      "item": [
+        {
+          "name": "Login - Obtener Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login/",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Obtiene tokens JWT para autenticación"
+          }
+        },
+        {
+          "name": "Registrar Nuevo Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"nuevo_usuario\",\n  \"email\": \"nuevo@smartconnect.com\",\n  \"first_name\": \"Nuevo\",\n  \"last_name\": \"Usuario\",\n  \"password\": \"Password123456\",\n  \"password_confirm\": \"Password123456\",\n  \"rol_id\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/registro/",
+              "host": ["{{base_url}}"],
+              "path": ["registro"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. INFORMACIÓN Y ESTADO",
+      "item": [
+        {
+          "name": "Información del Proyecto",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/info/",
+              "host": ["{{base_url}}"],
+              "path": ["info"]
+            },
+            "description": "Sin autenticación requerida"
+          }
+        },
+        {
+          "name": "Estado del Sistema",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/simular/estado-sistema/",
+              "host": ["{{base_url}}"],
+              "path": ["simular", "estado-sistema"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. SENSORES - CRUD",
+      "item": [
+        {
+          "name": "Listar Sensores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sensores/",
+              "host": ["{{base_url}}"],
+              "path": ["sensores"]
+            }
+          }
+        },
+        {
+          "name": "Listar Sensores - Filtrado por Estado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sensores/?estado=activo",
+              "host": ["{{base_url}}"],
+              "path": ["sensores"],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "activo"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Detalle de Sensor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sensores/1/",
+              "host": ["{{base_url}}"],
+              "path": ["sensores", "1"]
+            }
+          }
+        },
+        {
+          "name": "Crear Sensor (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"AA:BB:CC:DD:EE:05\",\n  \"nombre\": \"Nuevo Sensor\",\n  \"estado\": \"activo\",\n  \"departamento\": 1,\n  \"usuario\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sensores/",
+              "host": ["{{base_url}}"],
+              "path": ["sensores"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Sensor (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"AA:BB:CC:DD:EE:01\",\n  \"nombre\": \"Tarjeta Actualizada\",\n  \"estado\": \"inactivo\",\n  \"departamento\": 2,\n  \"usuario\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sensores/1/",
+              "host": ["{{base_url}}"],
+              "path": ["sensores", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Sensor (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sensores/1/",
+              "host": ["{{base_url}}"],
+              "path": ["sensores", "1"]
+            }
+          }
+        },
+        {
+          "name": "Cambiar Estado de Sensor (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"bloqueado\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sensores/1/cambiar_estado/",
+              "host": ["{{base_url}}"],
+              "path": ["sensores", "1", "cambiar_estado"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. DEPARTAMENTOS - CRUD",
+      "item": [
+        {
+          "name": "Listar Departamentos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/departamentos/",
+              "host": ["{{base_url}}"],
+              "path": ["departamentos"]
+            }
+          }
+        },
+        {
+          "name": "Crear Departamento (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Nuevo Departamento\",\n  \"descripcion\": \"Descripción\",\n  \"ubicacion\": \"Piso 5\",\n  \"activo\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/departamentos/",
+              "host": ["{{base_url}}"],
+              "path": ["departamentos"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. BARRERAS - CRUD",
+      "item": [
+        {
+          "name": "Listar Barreras",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/barreras/",
+              "host": ["{{base_url}}"],
+              "path": ["barreras"]
+            }
+          }
+        },
+        {
+          "name": "Abrir Barrera (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/barreras/1/abrir/",
+              "host": ["{{base_url}}"],
+              "path": ["barreras", "1", "abrir"]
+            }
+          }
+        },
+        {
+          "name": "Cerrar Barrera (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/barreras/1/cerrar/",
+              "host": ["{{base_url}}"],
+              "path": ["barreras", "1", "cerrar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. EVENTOS - LECTURA",
+      "item": [
+        {
+          "name": "Listar Eventos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/eventos/",
+              "host": ["{{base_url}}"],
+              "path": ["eventos"]
+            }
+          }
+        },
+        {
+          "name": "Filtrar Eventos por Tipo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/eventos/por_tipo/?tipo=acceso_permitido",
+              "host": ["{{base_url}}"],
+              "path": ["eventos", "por_tipo"],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "acceso_permitido"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Eventos de un Sensor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/eventos/por_sensor/?sensor_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["eventos", "por_sensor"],
+              "query": [
+                {
+                  "key": "sensor_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. SIMULACIÓN IoT - SIN HARDWARE",
+      "item": [
+        {
+          "name": "Simular Lectura de Sensor RFID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"AA:BB:CC:DD:EE:01\",\n  \"departamento_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/simular/lectura-sensor/",
+              "host": ["{{base_url}}"],
+              "path": ["simular", "lectura-sensor"]
+            },
+            "description": "Simula un sensor RFID leyendo y reportando al sistema"
+          }
+        },
+        {
+          "name": "Simular Intento de Acceso Completo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"AA:BB:CC:DD:EE:01\",\n  \"barrera_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/simular/intento-acceso/",
+              "host": ["{{base_url}}"],
+              "path": ["simular", "intento-acceso"]
+            },
+            "description": "Simula un acceso completo con control de barrera"
+          }
+        },
+        {
+          "name": "Simular Cierre de Barrera",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"barrera_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/simular/cierre-barrera/",
+              "host": ["{{base_url}}"],
+              "path": ["simular", "cierre-barrera"]
+            }
+          }
+        },
+        {
+          "name": "Simular Cambio de Estado de Sensor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"AA:BB:CC:DD:EE:03\",\n  \"nuevo_estado\": \"perdido\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/simular/cambio-estado/",
+              "host": ["{{base_url}}"],
+              "path": ["simular", "cambio-estado"]
+            },
+            "description": "Simula que el NodeMCU reporta cambio de estado (pérdida, desactivación, etc)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. PRUEBAS DE ERROR",
+      "item": [
+        {
+          "name": "401 - Sin Token JWT",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sensores/",
+              "host": ["{{base_url}}"],
+              "path": ["sensores"]
+            },
+            "description": "Intenta acceder sin token"
+          }
+        },
+        {
+          "name": "403 - Operador intenta crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{operador_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"TEST:TEST:TEST\",\n  \"nombre\": \"Test\",\n  \"estado\": \"activo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sensores/",
+              "host": ["{{base_url}}"],
+              "path": ["sensores"]
+            }
+          }
+        },
+        {
+          "name": "400 - UID Duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"AA:BB:CC:DD:EE:01\",\n  \"nombre\": \"Duplicado\",\n  \"estado\": \"activo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sensores/",
+              "host": ["{{base_url}}"],
+              "path": ["sensores"]
+            }
+          }
+        },
+        {
+          "name": "404 - Sensor No Existe",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sensores/9999/",
+              "host": ["{{base_url}}"],
+              "path": ["sensores", "9999"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string",
+      "description": "Copiar aquí el token del login"
+    },
+    {
+      "key": "operador_token",
+      "value": "",
+      "type": "string",
+      "description": "Token de usuario operador para pruebas de permisos"
+    }
+  ]
+}

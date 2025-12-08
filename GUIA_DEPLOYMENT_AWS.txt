@@ -1,0 +1,485 @@
+# GUÍA DE DESPLIEGUE EN AWS EC2
+
+## Requisitos Previos
+
+1. Cuenta AWS activa
+2. Instancia EC2 (Amazon Linux 2) ejecutándose
+3. Security Group con puertos abiertos:
+   - 22 (SSH)
+   - 80 (HTTP)
+   - 443 (HTTPS)
+4. Par de claves EC2 descargado
+5. (Opcional) Dominio registrado
+
+---
+
+## Paso 1: Conectar a EC2
+
+### Desde PowerShell/CMD
+
+```powershell
+# Cambiar permisos de la clave
+icacls "C:\ruta\a\tu-clave.pem" /grant:r "%username%:(F)"
+icacls "C:\ruta\a\tu-clave.pem" /inheritance:r
+
+# Conectar por SSH
+ssh -i "C:\ruta\a\tu-clave.pem" ec2-user@tu-ip-publica.compute.amazonaws.com
+```
+
+### Desde Linux/Mac
+
+```bash
+chmod 400 tu-clave.pem
+ssh -i tu-clave.pem ec2-user@tu-ip-publica.compute.amazonaws.com
+```
+
+---
+
+## Paso 2: Actualizar el Sistema
+
+```bash
+sudo yum update -y
+sudo yum upgrade -y
+```
+
+---
+
+## Paso 3: Instalar Dependencias
+
+```bash
+# Python y herramientas
+sudo yum install python3 python3-pip python3-devel -y
+
+# PostgreSQL client
+sudo yum install postgresql-devel -y
+
+# Nginx
+sudo yum install nginx -y
+
+# Git
+sudo yum install git -y
+
+# Supervisor (para mantener el servidor ejecutándose)
+sudo yum install supervisor -y
+```
+
+---
+
+## Paso 4: Clonar el Repositorio
+
+```bash
+cd /var/www
+sudo mkdir smartconnect_backend
+sudo chown ec2-user:ec2-user smartconnect_backend
+
+cd smartconnect_backend
+git clone https://tu-repositorio.git .
+```
+
+---
+
+## Paso 5: Crear Entorno Virtual
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+
+# Actualizar pip
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+---
+
+## Paso 6: Configurar Base de Datos en AWS RDS
+
+### Crear RDS PostgreSQL
+
+1. En AWS Console → RDS → Create Database
+2. Engine: PostgreSQL
+3. DB instance identifier: smartconnect-prod
+4. Master username: postgres
+5. Master password: ******* (Guardar en lugar seguro)
+6. Allocate storage: 20 GB
+7. Storage type: gp2
+8. Create database
+
+### Actualizar settings.py
+
+```python
+# smartconnect_backend/settings.py
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'smartconnect',
+        'USER': 'postgres',
+        'PASSWORD': 'tu-contraseña-rds',
+        'HOST': 'smartconnect-prod.c******.us-east-1.rds.amazonaws.com',
+        'PORT': '5432',
+    }
+}
+
+DEBUG = False
+ALLOWED_HOSTS = ['tu-ip-ec2.compute.amazonaws.com', 'tu-dominio.com']
+```
+
+---
+
+## Paso 7: Ejecutar Migraciones
+
+```bash
+python manage.py migrate
+python manage.py collectstatic --noinput
+python populate_db.py
+```
+
+---
+
+## Paso 8: Configurar Gunicorn
+
+### Crear archivo de servicio
+
+```bash
+sudo nano /etc/systemd/system/smartconnect.service
+```
+
+Contenido:
+
+```ini
+[Unit]
+Description=SmartConnect API
+After=network.target
+
+[Service]
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/var/www/smartconnect_backend
+Environment="PATH=/var/www/smartconnect_backend/venv/bin"
+ExecStart=/var/www/smartconnect_backend/venv/bin/gunicorn \
+    smartconnect_backend.wsgi:application \
+    --bind 0.0.0.0:8000 \
+    --workers 4 \
+    --worker-class sync \
+    --timeout 30
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Guardar con `Ctrl+X`, luego `Y`, luego `Enter`.
+
+### Activar el servicio
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable smartconnect.service
+sudo systemctl start smartconnect.service
+
+# Verificar estado
+sudo systemctl status smartconnect.service
+```
+
+---
+
+## Paso 9: Configurar Nginx
+
+### Crear configuración de Nginx
+
+```bash
+sudo nano /etc/nginx/conf.d/smartconnect.conf
+```
+
+Contenido:
+
+```nginx
+upstream smartconnect_app {
+    server 127.0.0.1:8000;
+}
+
+server {
+    listen 80;
+    server_name tu-ip-publica.compute.amazonaws.com;
+    client_max_body_size 10M;
+
+    location / {
+        proxy_pass http://smartconnect_app;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 90;
+    }
+
+    location /static/ {
+        alias /var/www/smartconnect_backend/static/;
+        expires 30d;
+    }
+
+    location /media/ {
+        alias /var/www/smartconnect_backend/media/;
+        expires 7d;
+    }
+}
+```
+
+### Activar Nginx
+
+```bash
+sudo systemctl enable nginx
+sudo systemctl start nginx
+sudo systemctl reload nginx
+
+# Verificar
+sudo systemctl status nginx
+```
+
+---
+
+## Paso 10: Configurar HTTPS (SSL) - OPCIONAL
+
+### Usando Let's Encrypt (Gratis)
+
+```bash
+sudo yum install certbot python3-certbot-nginx -y
+
+# Si tienes dominio
+sudo certbot --nginx -d tu-dominio.com -d www.tu-dominio.com
+
+# Sin dominio (auto-renovación manual)
+# Saltate este paso si solo usas IP
+```
+
+---
+
+## Paso 11: Verificar Funcionamiento
+
+```bash
+# Verificar que Gunicorn está corriendo
+ps aux | grep gunicorn
+
+# Verificar logs
+sudo journalctl -u smartconnect.service -f
+
+# Prueba local
+curl http://127.0.0.1:8000/api/info/
+```
+
+---
+
+## Paso 12: Prueba Remota
+
+Abre tu navegador y accede a:
+
+```
+http://tu-ip-publica.compute.amazonaws.com/api/info/
+```
+
+Si ves la respuesta JSON, ¡está funcionando!
+
+---
+
+## Paso 13: Pruebas Completas en Postman/Apidog
+
+### Cambiar base_url en la colección
+
+Antes:
+```
+base_url = http://localhost:8000/api
+```
+
+Ahora:
+```
+base_url = http://tu-ip-publica.compute.amazonaws.com/api
+```
+
+### Ejecutar flujo de pruebas
+
+1. Login
+2. Crear sensor
+3. Simular lectura RFID
+4. Ver eventos
+5. Etc.
+
+---
+
+## Monitoreo y Mantenimiento
+
+### Ver logs en tiempo real
+
+```bash
+sudo journalctl -u smartconnect.service -f
+
+# Con grep para filtrar
+sudo journalctl -u smartconnect.service | grep ERROR
+```
+
+### Reiniciar servicio
+
+```bash
+sudo systemctl restart smartconnect.service
+```
+
+### Ver uso de recursos
+
+```bash
+# CPU y memoria
+top
+
+# Espacio en disco
+df -h
+
+# Conexiones a BD
+sudo netstat -tulnp | grep postgres
+```
+
+### Backup de base de datos
+
+```bash
+# Crear backup
+pg_dump -U postgres -h tu-rds-endpoint smartconnect > backup.sql
+
+# Restaurar
+psql -U postgres -h tu-rds-endpoint smartconnect < backup.sql
+```
+
+---
+
+## Solucionar Problemas
+
+### Error: Permission denied (nginx)
+
+```bash
+sudo chown -R ec2-user:ec2-user /var/www/smartconnect_backend
+sudo chmod -R 755 /var/www/smartconnect_backend
+```
+
+### Error: 502 Bad Gateway
+
+```bash
+# Verificar Gunicorn
+sudo systemctl status smartconnect.service
+
+# Ver logs
+sudo journalctl -u smartconnect.service -n 50
+
+# Reiniciar
+sudo systemctl restart smartconnect.service
+```
+
+### Error: Database connection refused
+
+```bash
+# Verificar RDS security group permite acceso desde EC2
+# Verificar credenciales en settings.py
+# Verificar RDS está UP
+
+aws rds describe-db-instances --db-instance-identifier smartconnect-prod
+```
+
+### Error: Static files not found (404)
+
+```bash
+python manage.py collectstatic --noinput --clear
+sudo systemctl restart smartconnect.service
+```
+
+### Puerto 8000 ocupado
+
+```bash
+# Encontrar proceso
+lsof -i :8000
+
+# Matar proceso
+kill -9 PID
+```
+
+---
+
+## Configuración de Dominio (Opcional)
+
+### Con Route 53 (AWS)
+
+1. Registra dominio o transfiere a Route 53
+2. Crea hosted zone
+3. Crea registro A pointing a tu IP EC2
+4. Actualiza Nginx para aceptar el dominio
+5. Configura SSL con Let's Encrypt
+
+---
+
+## Checklist de Despliegue
+
+- [ ] EC2 instance creada
+- [ ] RDS PostgreSQL creada
+- [ ] Security groups configurados
+- [ ] Código clonado en EC2
+- [ ] Entorno virtual creado
+- [ ] Dependencias instaladas
+- [ ] Migraciones ejecutadas
+- [ ] Base de datos poblada
+- [ ] Gunicorn configurado
+- [ ] Nginx configurado
+- [ ] Servicios habilitados para autoarranque
+- [ ] Pruebas funcionales OK
+- [ ] HTTPS configurado (opcional)
+- [ ] Monitoreo configurado
+- [ ] Backups configurados
+
+---
+
+## URLs de Prueba
+
+### API pública
+
+```
+GET http://tu-ip-ec2/api/info/
+POST http://tu-ip-ec2/api/login/
+POST http://tu-ip-ec2/api/simular/lectura-sensor/
+```
+
+### Panel administrativo
+
+```
+http://tu-ip-ec2/admin/
+```
+
+---
+
+## Costos Estimados (AWS)
+
+- EC2 t3.micro: ~$10/mes
+- RDS t3.micro PostgreSQL: ~$30/mes
+- Data transfer: Varía
+- Total estimado: ~$40-50/mes
+
+---
+
+## Próximos Pasos
+
+1. Configurar monitoring (CloudWatch)
+2. Configurar alertas
+3. Implementar CI/CD con GitHub Actions
+4. Crear backup automático
+5. Documentar proceso en wiki
+6. Registrar dominio personalizado
+
+---
+
+## Suporte
+
+Para problemas:
+
+1. Revisar logs: `journalctl -u smartconnect.service`
+2. Verificar seguridad groups
+3. Revisar credenciales RDS
+4. Ejecutar migraciones nuevamente si es necesario
+
+---
+
+**Versión:** 1.0  
+**Última actualización:** Diciembre 8, 2025
+

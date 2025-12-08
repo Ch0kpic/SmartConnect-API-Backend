@@ -1,0 +1,183 @@
+# INICIO RÁPIDO - SmartConnect API
+
+## ⚡ En 5 minutos...
+
+### 1. Verificar que el servidor está ejecutándose
+
+El servidor ya está corriendo en:
+```
+http://localhost:8000/api/
+```
+
+### 2. Obtener Token JWT
+
+```bash
+curl -X POST http://localhost:8000/api/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "admin123456"}'
+```
+
+**Respuesta:**
+```json
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "user": {...}
+}
+```
+
+Copia el valor de `access` y guárdalo.
+
+### 3. Probar un Endpoint
+
+```bash
+curl -X GET http://localhost:8000/api/sensores/ \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+### 4. Simular Lectura RFID (Sin Token)
+
+```bash
+curl -X POST http://localhost:8000/api/simular/lectura-sensor/ \
+  -H "Content-Type: application/json" \
+  -d '{"uid": "AA:BB:CC:DD:EE:01", "departamento_id": 1}'
+```
+
+**Respuesta:**
+```json
+{
+  "acceso": "permitido",
+  "sensor": "Tarjeta Acceso 001",
+  "evento_id": 10
+}
+```
+
+---
+
+## 📊 Información del Proyecto
+
+```bash
+curl http://localhost:8000/api/info/
+```
+
+---
+
+## 📖 Documentación
+
+Abre cualquiera de estos archivos:
+
+1. **README.md** - Quick start (recomendado para comenzar)
+2. **DOCUMENTACION_TECNICA.md** - Documentación completa (más detallada)
+3. **GUIA_ENDPOINTS.txt** - Referencia rápida de endpoints
+4. **GUIA_DEPLOYMENT_AWS.txt** - Cómo desplegar en AWS
+
+---
+
+## 🧪 Postman/Apidog
+
+1. Abre Postman o Apidog
+2. Click en "Import"
+3. Carga el archivo: `SmartConnect_API.postman_collection.json`
+4. Selecciona la carpeta "1. AUTENTICACIÓN"
+5. Ejecuta "Login - Obtener Token"
+6. Copia el token en la variable `access_token`
+7. ¡Ahora puedes probar cualquier endpoint!
+
+---
+
+## 🎯 Primeros Endpoints a Probar
+
+### 1️⃣ Información Pública (No requiere token)
+```
+GET /api/info/
+```
+
+### 2️⃣ Login
+```
+POST /api/login/
+Body: {"username": "admin", "password": "admin123456"}
+```
+
+### 3️⃣ Listar Sensores (Requiere token)
+```
+GET /api/sensores/
+Header: Authorization: Bearer {token}
+```
+
+### 4️⃣ Simular Lectura RFID (No requiere token)
+```
+POST /api/simular/lectura-sensor/
+Body: {"uid": "AA:BB:CC:DD:EE:01", "departamento_id": 1}
+```
+
+### 5️⃣ Ver Eventos
+```
+GET /api/eventos/
+Header: Authorization: Bearer {token}
+```
+
+---
+
+## 🔐 Usuarios de Prueba
+
+### Admin (Acceso total)
+- Username: `admin`
+- Password: `admin123456`
+- Puede: Crear, editar, eliminar todo
+
+### Operador (Solo lectura)
+- Username: `operador`
+- Password: `operador123456`
+- Puede: Solo ver datos
+
+---
+
+## 🚪 Códigos HTTP Esperados
+
+| Código | Significado |
+|--------|-------------|
+| 200 | OK - Éxito |
+| 201 | Created - Recurso creado |
+| 204 | No Content - Eliminado |
+| 400 | Bad Request - Validación fallida |
+| 401 | Unauthorized - Sin token |
+| 403 | Forbidden - Sin permisos |
+| 404 | Not Found - No existe |
+
+---
+
+## 🆘 Si algo no funciona
+
+### Error: "Connection refused"
+→ Asegúrate que el servidor esté corriendo:
+```bash
+python manage.py runserver 0.0.0.0:8000
+```
+
+### Error: "Not found"
+→ Verifica la URL, ej: `/api/sensores/` (con trailing slash)
+
+### Error: "401 Unauthorized"
+→ Falta el token JWT, agrégalo en el header:
+```
+Authorization: Bearer {tu_token}
+```
+
+### Error: "403 Forbidden"
+→ No tienes permisos, usa usuario admin
+
+### Error: "400 Bad Request"
+→ Verifica los datos que envías, revisa DOCUMENTACION_TECNICA.md
+
+---
+
+## 📚 Aprender Más
+
+- Documentación Django: https://docs.djangoproject.com/
+- Django REST Framework: https://www.django-rest-framework.org/
+- SimpleJWT: https://django-rest-framework-simplejwt.readthedocs.io/
+
+---
+
+**¡Listo! Ahora a disfrutar la API 🚀**
+
