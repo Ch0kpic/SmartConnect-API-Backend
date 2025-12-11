@@ -1,0 +1,6 @@
+(venv) ubuntu@ip-172-31-78-89:/srv/app$ python manage.py createsuperuser
+Username (leave blank to use 'ubuntu'): cristobal
+Email address: cristobalvalenzuelachavez@gmail.com
+Password: Dankmemes,1
+Password (again): Dankmemes,1
+Superuser created successfully.
