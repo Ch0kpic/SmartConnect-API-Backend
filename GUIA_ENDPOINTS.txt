@@ -72,7 +72,7 @@ Headers: (NO REQUIERE TOKEN)
 
 Response (200):
 {
-  "autor": ["Dylan Torres"],
+  "autor": ["Dylan Barraza y Cristobal Valenzuela"],
   "asignatura": "Programación Back End",
   "proyecto": "SmartConnect - Sistema de Control de Acceso Inteligente",
   "descripcion": "API RESTful para gestionar sensores RFID, usuarios, departamentos y eventos de acceso en un sistema IoT de control inteligente.",
