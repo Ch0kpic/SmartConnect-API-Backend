@@ -2,7 +2,7 @@
 ## GUÍA DE PRUEBAS - SmartConnect API
 ## Endpoints y Ejemplos de Uso
 
-BASE_URL: http://localhost:8000/api
+BASE_URL: http://44.214.188.33/api
 
 ---
 
@@ -18,6 +18,13 @@ Body (JSON):
 {
   "username": "admin",
   "password": "admin123456"
+}
+
+o
+
+{
+  "username": "cristobal",
+  "password": "Dankmemes,1"
 }
 
 Response (200):
