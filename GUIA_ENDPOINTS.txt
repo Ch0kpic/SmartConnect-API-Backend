@@ -2,7 +2,7 @@
 ## GUÍA DE PRUEBAS - SmartConnect API
 ## Endpoints y Ejemplos de Uso
 
-BASE_URL: http://localhost:8000/api
+BASE_URL: http://44.214.188.33/api
 
 ---
 
@@ -18,6 +18,13 @@ Body (JSON):
 {
   "username": "admin",
   "password": "admin123456"
+}
+
+o
+
+{
+  "username": "cristobal",
+  "password": "Dankmemes,1"
 }
 
 Response (200):
@@ -72,7 +79,7 @@ Headers: (NO REQUIERE TOKEN)
 
 Response (200):
 {
-  "autor": ["Dylan Torres"],
+  "autor": ["Dylan Barraza y Cristobal Valenzuela"],
   "asignatura": "Programación Back End",
   "proyecto": "SmartConnect - Sistema de Control de Acceso Inteligente",
   "descripcion": "API RESTful para gestionar sensores RFID, usuarios, departamentos y eventos de acceso en un sistema IoT de control inteligente.",
