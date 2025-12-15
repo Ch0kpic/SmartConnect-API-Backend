@@ -44,7 +44,7 @@ class IsAdmin(permissions.BasePermission):
 def info_endpoint(request):
     """Endpoint de información del proyecto"""
     return Response({
-        "autor": ["Dylan Torres"],
+        "autor": ["Dylan Barraza", "Cristobal Valenzuela"],
         "asignatura": "Programación Back End",
         "proyecto": "SmartConnect - Sistema de Control de Acceso Inteligente",
         "descripcion": "API RESTful para gestionar sensores RFID, usuarios, departamentos y eventos de acceso en un sistema IoT de control inteligente.",
